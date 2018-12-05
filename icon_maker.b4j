@@ -1,0 +1,146 @@
+﻿Version=4.2
+AppType=JavaFX
+NumberOfModules=0
+Build1=Default,b4j.example
+NumberOfFiles=1
+File1=frm1.bjl
+NumberOfLibraries=2
+Library1=jcore
+Library2=jfx
+@EndOfDesignText@
+#Region  Project Attributes 
+	#MainFormWidth: 363
+	#MainFormHeight: 460 
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Private MainForm As Form
+	Private imgicon As ImageView
+	Private txtpath As TextField
+	Private isIcon As Boolean
+	Private sFilename As String
+	Private rbios As RadioButton
+	Private rbandroid As RadioButton
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	
+	MainForm = Form1
+	MainForm.SetFormStyle("UNIFIED")
+	MainForm.Resizable = False
+	MainForm.RootPane.LoadLayout("frm1")
+	MainForm.Show
+	
+	fx.ShowExternalDocument("https://telegram.me/studentcomputer")
+	
+End Sub
+
+Sub btnchoosefile_Action
+	
+	Dim fa As FileChooser
+	fa.Initialize
+	fa.SetExtensionFilter("Png File",Array As String("*.png"))
+	fa.Title = "Choose png file"
+	sFilename = fa.ShowOpen(MainForm)
+	
+	If sFilename.Length > 0 Then
+		Try
+			imgicon.SetImage(fx.LoadImage("",sFilename))
+			isIcon = True
+		Catch
+			Log(LastException)
+		End Try
+	End If
+	
+End Sub
+
+Sub btnchoosefolder_Action
+	
+	Dim fa As DirectoryChooser
+	fa.Initialize
+	fa.Title = "Choose png file"
+	txtpath.Text = fa.Show(MainForm)
+	
+End Sub
+
+Sub btnexit_Action
+	ExitApplication
+End Sub
+
+Sub btnmake_Action
+	
+	If isIcon = False Then
+		fx.Msgbox(MainForm,"Please choose png file","Icon")
+		Return
+	End If
+	
+	If txtpath.Text.Length = 0 Then
+		fx.Msgbox(MainForm,"Please select folder for save output","Folder")
+		Return
+	End If
+	
+	If File.Exists(txtpath.Text,"") = False Then
+		fx.Msgbox(MainForm,"Please select valid folder","Folder")
+		Return
+	End If
+	
+	If rbandroid.Selected = True Then
+		MakeAndroidIcon
+	Else
+		MakeiOSIcon
+	End If
+	
+End Sub
+
+Sub MakeAndroidIcon
+	
+	File.MakeDir(txtpath.Text,"drawable-ldpi")
+	File.MakeDir(txtpath.Text,"drawable-mdpi")
+	File.MakeDir(txtpath.Text,"drawable-hdpi")
+	File.MakeDir(txtpath.Text,"drawable-xhdpi")
+	File.MakeDir(txtpath.Text,"drawable-xxhdpi")
+	File.MakeDir(txtpath.Text,"drawable-xxxhdpi")
+	
+	SaveImage(fx.LoadImageSample("",sFilename,36,36),txtpath.Text & "\drawable-ldpi" ,"icon.png")
+	SaveImage(fx.LoadImageSample("",sFilename,72,72),txtpath.Text & "\drawable-hdpi" ,"icon.png")
+	SaveImage(fx.LoadImageSample("",sFilename,48,48),txtpath.Text & "\drawable-mdpi" ,"icon.png")
+	SaveImage(fx.LoadImageSample("",sFilename,96,96),txtpath.Text & "\drawable-xhdpi" ,"icon.png")
+	SaveImage(fx.LoadImageSample("",sFilename,144,144),txtpath.Text & "\drawable-xxhdpi" ,"icon.png")
+	SaveImage(fx.LoadImageSample("",sFilename,192,192),txtpath.Text & "\drawable-xxxhdpi" ,"icon.png")
+	
+	fx.Msgbox(MainForm,"Icon created successfully for Android","Alert")
+	
+End Sub
+
+Sub MakeiOSIcon
+	
+	SaveImage(fx.LoadImageSample("",sFilename,60,60),txtpath.Text ,"icon-60.png")
+	SaveImage(fx.LoadImageSample("",sFilename,120,120),txtpath.Text ,"icon-60@2x.png")
+	SaveImage(fx.LoadImageSample("",sFilename,76,76),txtpath.Text ,"icon-76.png")
+	SaveImage(fx.LoadImageSample("",sFilename,152,152),txtpath.Text,"icon-76@2x.png")
+	
+	fx.Msgbox(MainForm,"Icon created successfully for iOS","Alert")
+	
+End Sub
+
+Sub SaveImage(image1 As Image,FilePath As String,Filename As String)
+	
+	Dim ou As OutputStream
+	ou = File.OpenOutput(FilePath,Filename,False)
+	image1.WriteToStream(ou)
+	ou.Close
+	
+End Sub
+
+Sub rbios_SelectedChange(Selected As Boolean)
+	If Selected Then
+		rbandroid.Selected = False
+	End If
+End Sub
+
+Sub rbandroid_SelectedChange(Selected As Boolean)
+	If Selected Then
+		rbios.Selected = False
+	End If
+End Sub
